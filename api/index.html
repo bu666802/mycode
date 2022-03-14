@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+
+
+    
+<meta charset="utf-8">
+<title>API</title>
+
+
+<meta name="viewport" content="width=device-width, initial-scale=2.5, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />  
+<script src="http://cdn.bootcss.com/jquery/1.12.3/jquery.min.js"></script>
+<script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<link  href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.css" rel="stylesheet">
+
+
+<style type="text/css">
+
+	body      {font-family: Verdana , Consolas ,Cambria,Courier;}
+	textarea  {font-family: Consolas ,Verdana ,Cambria,Courier;}
+	pre {
+	
+		font-family: Consolas ,Verdana ,Cambria,Courier;
+		border-width:0px;
+		
+	}
+	
+</style>
+
+
+
+
+<script>
+
+var requestDate ;
+
+
+function clearMessage(){
+	
+	$("#responseMessage").html("");
+	
+}
+
+function showAction(obj){
+	
+	 $("#actionInput").val(JSON.stringify(obj,null,4));
+	
+}
+
+
+function submitAction(){
+	
+	var actionMsg = $("#actionInput").val();
+	requestDate = new Date();
+	var  jsonData =  JSON.parse(actionMsg);
+	
+	
+	if(jsonData.jsonData != null ){
+		jsonData.jsonData = JSON.stringify(jsonData.jsonData);
+	}
+	
+	
+	
+	$.ajax({
+		
+		    url: "../"+jsonData.serverCode,
+		   type: 'POST',
+	   dataType: 'text', 
+		  data : jsonData ,
+		success: function( data) {
+			
+			var jData =  JSON.parse(data);  
+			var str   =  JSON.stringify(JSON.parse(data),null, 4);
+			appendMessage (   jData.serverCode  ,  str);
+		}
+	
+	
+	});
+    
+}
+
+
+
+function appendMessage(title,msg){
+	
+   
+    var date0 = new Date();
+   
+	var costSec = (date0.getTime() - requestDate.getTime())/1000;
+    
+    var  outStr = "";
+    
+    outStr +="<div  class='panel panel-default area'>";
+    outStr +="<div  class='panel-heading'>";
+    outStr +="<span class='text-left'>"+ title+"  ("+costSec +" sec)</span>";
+    outStr +="</div>";
+    outStr +="<div class='panel-body'>";
+    outStr +="<pre>"+msg+"</pre>";
+    outStr +="</div>";
+    outStr +="</div>";
+            
+    $('#responseMessage').prepend(outStr);
+    $('.area:eq(0)').hide();
+    $('.area:eq(0)').slideDown();
+	
+    
+    
+	
+}
+
+
+
+
+
+	function managerInfo() {
+
+		var jsonData = {
+
+			"serverCode" : "action/manager/info",
+		}
+
+		showAction(jsonData);
+
+	}
+	function managerLogin() {
+
+		var jsonData = {
+
+			"serverCode" : "action/manager/login",
+			"account" : "admin",
+			"password" : "123",
+			
+		}
+
+		showAction(jsonData);
+
+	}
+	function managerList() {
+
+		var jsonData = {
+			"serverCode" : "action/manager/list",
+		}
+
+		showAction(jsonData);
+
+	}
+	
+	
+	
+	
+	//DataBenchmarkProject
+
+	function carList() {
+
+		var jsonData = {
+
+			"serverCode" : "action/manager/carList",
+			"vin" : "",
+			"status" : "0",
+		}
+
+		showAction(jsonData);
+
+	}
+	
+	function carAdd() {
+
+		var jsonData = {
+
+			"serverCode" : "action/manager/carAdd",
+			"vin" : "",
+			"color" : "",
+		}
+
+		showAction(jsonData);
+
+	}
+	
+	function fileVideoFileList() {
+
+		var jsonData = {
+
+			"serverCode" : "action/video/file/list",
+		
+		}
+
+		showAction(jsonData);
+
+	}
+	
+	function fileVideoList() {
+
+		var jsonData = {
+
+			"serverCode" : "action/video/list",
+			"path" : "/",
+		
+		}
+
+		showAction(jsonData);
+
+	}
+	function fileLoglist() {
+
+		var jsonData = {
+
+			"serverCode" : "action/file/log/list",
+			"path" : "/",
+		
+		}
+
+		showAction(jsonData);
+
+	}
+	
+	
+	
+	
+	
+	
+</script>
+   
+	<div id="test"></div>
+	
+	
+
+<nav class="navbar navbar-default">
+
+	<div class="container-fluid">
+   
+    <div class="navbar-header">
+    
+    	<a class="navbar-brand" href="#" id="messages"   >API</a>
+       		
+  	</div>
+  	
+  	
+  	
+  	<ul class="nav navbar-nav navbar-center">
+  	
+  		<li class="active"><a href="#">HOME</a></li>
+  		
+  	</ul>
+  	
+  	
+  	
+   	<ul class="nav navbar-nav navbar-right">
+     	
+       	<li ><a href="#"><span class="glyphicon glyphicon-member"></span>admin</a></li>
+     
+    </ul>
+    
+    
+    
+    
+    
+    
+    
+  </div>
+</nav>
+  
+    
+    
+<hr>
+ 
+  
+  
+  <div class="container-fluid"  >
+  
+  	<div class="col-md-0" ></div>
+ 	<div class="col-md-4" >
+ 	
+ 		
+	
+	
+ 		
+ 	
+ 	
+ 		<div class="panel-group">
+			<div class="panel panel-default">
+				<div class="panel-heading">api</div>
+				<div class="list-group">
+				
+			
+					
+					<a class = "list-group-item"  href="javascript:managerInfo()"   	    >managerInfo</a>
+					<a class = "list-group-item"  href="javascript:managerLogin()"   	    >managerLogin</a>
+					<a class = "list-group-item"  href="javascript:managerList()"   	    >managerList</a>
+					
+					
+				</div>
+			</div>
+		</div>
+	
+		<div class="panel-group">
+			<div class="panel panel-default">
+				<div class="panel-heading">car</div>
+				<div class="list-group">
+					
+					<a class = "list-group-item"  href="javascript:fileVideoFileList()"    >fileVideoFileList</a>
+					<a class = "list-group-item"  href="javascript:fileVideoList()"   	    >fileVideoList</a>
+					
+					<a class = "list-group-item"  href="javascript:fileLoglist()"   	    >fileLoglist</a>
+					
+					
+					
+					
+					
+					
+				</div>
+			</div>
+		</div>
+ 	
+ 	
+		
+		
+ 	
+ 	
+ 	
+		
+		
+		
+		
+		
+		
+		
+				
+		
+		
+	
+		 
+		
+		
+		
+		
+		
+		
+		
+		
+	
+	
+	
+	
+	</div>
+	
+	<div class="col-md-8" >
+   	   	  		
+  		<div class="form-group">
+  	 		<label >request</label>
+  	 		
+  			<textarea class="form-control" rows="8"  id ="actionInput" ></textarea>
+  		</div>
+  		 
+  		 	
+  		  	
+  		<div class="form-group">
+  	   	 	
+  	 	<button class="btn btn-default" onclick="submitAction()" >request</button>
+  	 	<button class="btn btn-default" onclick="clearMessage()" >clear</button>
+  	   	
+  	 	
+  	 	</div>
+  	 	<label for="exampleInputEmail1">response</label>
+  	 	<br>
+  	 	
+  	 	<div id="responseMessage"  class="panel-group" ></div>
+  	 	  	 	     
+  
+  </div>
+</div>
+ 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+<footer class="container-fluid text-center">
+	<p><img src="../verifyCode" /> <br> Copyright 2016</p>  
+</footer>
+
+
+  
+</body>
+	
+	
+	
+
+</body>
+</html>
