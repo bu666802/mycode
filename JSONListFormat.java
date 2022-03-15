@@ -1,72 +1,88 @@
 package com;
 
+
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class JSONListFormat {
-
-	private static Map<String, Properties> languagesMapsMap = new HashMap<String, Properties>();
+	
+	
+	
+	
+	
+	private static Map<String,Properties>  languagesData = new HashMap<String,Properties> ();
 	private Logger logger = Logger.getLogger(this.getClass());
 	private String languageName = "NameZh-CN";
-
-	private String showMsg = "";
-	private String serverCode = "";
-	private String serverMsg = "";
-
-	private int dataTotal = 0;
-	private int startIndex = 0;
-	private int endIndex = 100000;
-	private int currentIndex = 0;
 	
-	//private String parameter;
 
-	private JSONArray jsonArray = new JSONArray();
-
-	// [2017/11/24]
-	static {
-		try {
-			loadLanguage("NameZh-CN", "language-cn.properties");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	private String showMsg	  =  "";
+	private String serverCode =  "";
+	private String serverMsg  =  "";
+	
+	private int    dataTotal  =    0;
+	private int    startIndex =   0;
+	
+	
+	private int  currentIndex =     0;
+	private int      endIndex = 10000;
+	
+	private boolean isUseMemoryPage = false;
+	
+	private int offset = 10;
+	
+	private long createTime = System.currentTimeMillis();
+	
+	
+	public int findPageNum( ){
+		int pageNum     =   (startIndex/ offset)+1 ;
+		return pageNum;
+	}
+	
+	public int findPageSize( ){
+		return offset;
+	}
+	
+	public void setUseMemoryPage(boolean isUseMemoryPage) {
+		this.isUseMemoryPage = isUseMemoryPage;
 	}
 
-	// [2017/11/24]
-	public static void loadLanguage(String langName, String resourcePath) throws Exception {
 
-		InputStream inputStream = JSONListFormat.class.getClassLoader().getResourceAsStream(resourcePath);
-		InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
-		Properties languagesProperties = new Properties();
-		languagesProperties.load(inputStreamReader);
-		inputStream.close();
-		inputStreamReader.close();
-		languagesMapsMap.put(langName, languagesProperties);
+	public void setDataTotal(long dataCount) {
+		if(dataCount<0)	return;
+		
+		this.dataTotal = (int)dataCount;
+	}
+	public int getDataTotal() {
+		return dataTotal;
+	}
+
+	private List<Object>   data = new LinkedList<Object>();
+
+	public List<Object> getData() {
+		return data;
 	}
 
 	public String getLanguageName() {
 		return languageName;
 	}
-
 	public void setLanguageName(String languageName) {
 		this.languageName = languageName;
 	}
-
-	public static void putLanguage(String languageFileName, Properties p) {
-		languagesMapsMap.put(languageFileName, p);
-	}
-
+	
+	
 	public String getShowMsg() {
 		return showMsg;
 	}
-
 	public void setShowMsg(String showMsg) {
 		this.showMsg = showMsg;
 	}
@@ -74,116 +90,154 @@ public class JSONListFormat {
 	public String getServerCode() {
 		return serverCode;
 	}
-
 	public void setServerCode(String serverCode) {
 		this.serverCode = serverCode;
 	}
-
+	
 	public String getServerMsg() {
 		return serverMsg;
 	}
-
 	public void setServerMsg(String str) {
 		this.serverMsg = str;
 	}
 
-	public JSONArray getDataJsonArray0() {
-		return jsonArray;
+	public static void putLanguage(String  languageFileName , Properties p ) {
+	 	 
+		languagesData.put(languageFileName, p);
+    	
 	}
-
-	public void setLimit(int start, int offset) {
+	
+	public void setLimit(int start, int offset){
 		startIndex = start;
-		endIndex = start + offset;
+		  endIndex = start  + offset;
+		  this.offset = offset;
 	}
 	
 
-	public void addMap(HashMap<String, String> map) throws Exception {
-		if (startIndex <= currentIndex & currentIndex < endIndex) {
-			jsonArray.put(createJSONObject(map));
+	
+	
+	
+	public void addObject(Object jObject) throws Exception {
+		if(!isUseMemoryPage){
+			data.add(jObject);
+			currentIndex++;
+			return;
+		}
+		
+		if( startIndex <= currentIndex & currentIndex < endIndex ){
+			data.add(jObject);
 		}
 		currentIndex++;
 	}
-
-	public void addJSONObject(JSONObject jObject) throws Exception {
-		if (startIndex <= currentIndex & currentIndex < endIndex) {
-			jsonArray.put(jObject);
+		
+	public void addObject(List<?> list) throws Exception {
+		if(!isUseMemoryPage){
+			for (int i = 0; i < list.size(); i++) {
+				data.add(list.get(i));
+				currentIndex++;
+			}
+			return;
 		}
-		currentIndex++;
-	}
-
-	// 新加 的
-	public void addJSONArray(JSONArray jArray) throws Exception {
-		if (startIndex <= currentIndex & currentIndex < endIndex) {
-			jsonArray.put(jArray);
+		
+		for (int i = 0; i < list.size(); i++) {
+			if( startIndex <= currentIndex & currentIndex < endIndex ){
+				data.add(list.get(i));
+				currentIndex++;
+			}else{
+				return;
+			}
 		}
-		currentIndex++;
+		
 	}
 
-	// 直接加入JSONArray
-	public void setJsonArray(JSONArray jsonArray) {
-		this.jsonArray = jsonArray;
-	}
 
-	public static JSONObject createJSONObject(HashMap<String, String> map) throws Exception {
-
-		JSONObject reposeDataObject = new JSONObject();
-
-		for (String key : map.keySet()) {
-			reposeDataObject.put(key, map.get(key));
-		}
-
-		return reposeDataObject;
-
-	}
-
-	public void setDataTotal(int dataCount) {
-		this.dataTotal = dataCount;
-	}
-
-	@Override
-	public String toString() {
+	//[2017/11/24]
+	static{
+		
 		try {
+			loadLanguage("NameZh-CN","language-cn.properties");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}	
+			
+	//[2017/11/24]
+	public static   void loadLanguage(String langName , String resourcePath  ) throws Exception {
+		
+		InputStream inputStream = JSONListFormat.class.getClassLoader().getResourceAsStream(resourcePath);
+	   	InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
+	   	Properties languagesProperties = new Properties();
+		languagesProperties.load(inputStreamReader); 
+	   	inputStream.close();
+	   	inputStreamReader.close();
+		languagesData.put(langName, languagesProperties);
+	}	
+	
+	
 
-			if (serverMsg == "")
-				serverMsg = "success";
-			if (showMsg == "") {
-				if (languageName == null)
-					languageName = "";
-				Properties languages = languagesMapsMap.get(languageName);
-				if (languages != null)
-					showMsg = languages.getProperty(serverMsg);
-				if (showMsg == null) {
-					showMsg = "【" + serverMsg + "】";
-					logger.error("JSONListFormat:错误码提示不存在：" + showMsg);
-				}
+	public double getRunTime() {
+		
+		return (System.currentTimeMillis()-createTime)/1000.0;
+	}
 
-			}
+	
+	@Override
+	public String toString(){
+		
+		
+	 
+		try {
+			
+			
+			if(serverMsg=="") serverMsg= "success";
+	 		if(showMsg==""){
+	 			if(languageName==null)languageName="";
+	 			Properties languages = languagesData.get(languageName);
+	 			if (languages!=null)showMsg   = languages.getProperty(serverMsg);
+	 			if(   showMsg==null| showMsg==""){
+	 				showMsg = "【"+serverMsg+"】";
+	 				logger.error("[JSONListFormat]错误码提示不存在："+showMsg);
+	 			}
+	 				
+	 		}
+	 		
+	 		
 
-			JSONObject jsonObject = new JSONObject();
-
-			jsonObject.put("serverMsg", serverMsg);
-			jsonObject.put("serverCode", serverCode);
-			jsonObject.put("dataTotal", dataTotal);
-			jsonObject.put("showMsg", showMsg);
-
-			if (dataTotal == 0) {
-				jsonObject.put("dataTotal", currentIndex);
-			}
-			jsonObject.put("data", jsonArray);
-
-			return jsonObject.toString(4);
-
+			if(dataTotal==0) dataTotal = currentIndex;
+		
+	
+	 		
+			JSONObject jsonObject = new JSONObject(this);
+		
+			
+		  	return jsonObject.toString(4);
+		  	
+		  	
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-
-		return "";
+		  	
+		return"";
 	}
 
-	public static void main(String[] args) {
+	
 
-		JSONListFormat js = new JSONListFormat();
-		System.out.println(js.toString());
+	public static void main(String[] args) throws Exception {
+		
+		HashMap<String,String> map1 = new HashMap<String,String>();
+		map1.put("id"     ,  "1");
+		map1.put("name"   ,  "will");
+		map1.put("phone"  , "000000000");
+		
+		
+		JSONListFormat format = new JSONListFormat();
+		format.setServerCode("userList");
+		format.addObject(map1);
+		format.addObject(map1);
+		
+		System.out.println(format.toString());
 	}
-
+	
+	
+	
 }
